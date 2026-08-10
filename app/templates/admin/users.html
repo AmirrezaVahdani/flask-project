@@ -1,0 +1,108 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}مدیریت اعضا و ورزشکاران{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-white">👥 مدیریت اعضا و بسته‌های شهریه</h1>
+    <p class="text-gray-400 text-xs mt-1">ثبت‌نام ورزشکار جدید، فعال‌سازی اشتراک و جستجوی سریع اعضا</p>
+</div>
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <form action="{{ url_for('admin.manage_users') }}" method="GET" class="flex items-center gap-2 w-full sm:w-auto">
+        <input name="q" value="{{ search_query }}" placeholder="جستجو بر اساس نام، کدملی یا موبایل"
+            class="w-full sm:w-72 bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition" />
+        <button type="submit" class="bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl px-4 py-3 text-sm font-bold transition">🔎 جستجو</button>
+    </form>
+    {% if search_query %}
+    <div class="text-xs text-gray-400">نتایج جستجو برای: <span class="text-white font-bold">{{ search_query }}</span></div>
+    {% endif %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-md font-bold text-cyan-400">➕ ثبت‌نام ورزشکار جدید</h3>
+            <span class="text-[10px] text-gray-500">ورودی سریع</span>
+        </div>
+        <form action="{{ url_for('admin.manage_users') }}" method="POST" class="flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">نام و نام خانوادگی</label>
+                <input type="text" name="full_name" required class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm focus:outline-none focus:border-cyan-500 text-white">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">کد ملی</label>
+                <input type="text" name="national_id" required class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm tracking-widest focus:outline-none focus:border-cyan-500 text-white">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">شماره موبایل</label>
+                <input type="text" name="phone_number" required class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm focus:outline-none focus:border-cyan-500 text-white">
+            </div>
+            <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold p-2.5 rounded-lg text-sm transition mt-2">💾 ذخیره و ایجاد حساب</button>
+        </form>
+    </div>
+
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-lg lg:col-span-2 overflow-x-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-md font-bold text-gray-300">📋 لیست ورزشکاران ثبت‌شده</h3>
+            <span class="text-[11px] text-gray-500">{{ users|length }} ورزشکار</span>
+        </div>
+        <table class="w-full text-right text-sm">
+            <thead class="bg-gray-950 text-gray-400 text-xs uppercase border-b border-gray-800">
+                <tr>
+                    <th class="p-3">نام ورزشکار</th>
+                    <th class="p-3">کد ملی / تلفن</th>
+                    <th class="p-3">وضعیت اشتراک فعلی</th>
+                    <th class="p-3">عملیات تمدید پویا</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/60">
+                {% for user in users %}
+                <tr class="hover:bg-gray-800/30 transition">
+                    <td class="p-3">
+                        <a href="{{ url_for('admin.user_profile', user_id=user.id) }}" class="font-bold text-cyan-400 hover:underline block">{{ user.full_name }}</a>
+                        <span class="text-[10px] text-gray-500">کیف پول: {{ user.wallet_balance }} تومان</span>
+                    </td>
+                    <td class="p-3">
+                        <div class="tracking-wider text-gray-300 text-xs">{{ user.national_id }}</div>
+                        <div class="text-gray-500 text-xs mt-0.5">{{ user.phone_number }}</div>
+                    </td>
+                    <td class="p-3 text-xs">
+                        {% if user.active_sub %}
+                            <span class="text-emerald-400 font-bold block">{{ user.active_sub.package_name }}</span>
+                            <span class="text-gray-500 text-[10px]">پایان: {{ user.active_sub.end_date }} ({{ user.active_sub.remaining_sessions }} جلسه)</span>
+                            <span class="text-amber-500 text-[10px] font-medium block mt-0.5">👤 مربی: {{ user.active_sub.trainer_name }}</span>
+                        {% else %}
+                            <span class="text-rose-400 font-bold">بدون اشتراک فعال</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3">
+                        <form action="{{ url_for('admin.subscribe_user', user_id=user.id) }}" method="POST" class="flex flex-col gap-1.5 bg-gray-950 p-2 border border-gray-800 rounded-lg">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="plan_id" required class="bg-gray-900 border border-gray-800 rounded px-1.5 py-1 text-[11px] text-gray-300 focus:outline-none">
+                                {% for plan in plans %}
+                                    <option value="{{ plan.id }}">{{ plan.name }} ({{ plan.price }} ت)</option>
+                                {% endfor %}
+                            </select>
+                            <div class="flex gap-1">
+                                <input type="text" 
+                                       name="trainer_name" 
+                                       placeholder="نام مربی مسئول" 
+                                       required
+                                       class="w-full bg-gray-900 border border-gray-800 rounded px-1.5 py-0.5 text-[10px] text-gray-300 focus:outline-none focus:border-cyan-500">
+                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-0.5 rounded text-[10px] transition shrink-0">⚡ شارژ</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="p-8 text-center text-gray-500 text-xs">هیچ ورزشکاری یافت نشد.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

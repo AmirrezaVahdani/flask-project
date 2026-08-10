@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}سیستم مدیریت هوشمند باشگاه{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    {% block head %}{% endblock %}
+
+</head>
+
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex flex-col">
+
+
+
+    <nav class="bg-gray-900 border-b border-gray-800 shadow-xl sticky top-0 z-50">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="flex items-center justify-between h-16">
+
+                <div class="flex items-center gap-6">
+
+                    <div class="text-xl font-black text-cyan-400 tracking-wider flex items-center gap-2">
+
+                        💪 <span>باشگاه هوشمند</span>
+
+                    </div>
+
+                    <div class="hidden md:flex items-center gap-1 text-xs font-medium text-gray-300">
+
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.admin_dashboard' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">📊 داشبورد</a>
+
+                        <a href="{{ url_for('admin.manage_users') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_users' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">👥 اعضا</a>
+
+                        <a href="{{ url_for('admin.manage_plans') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_plans' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">⚙️ پلن‌ها</a>
+
+                        <a href="{{ url_for('admin.manage_trainers') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_trainers' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">👨‍🏫 مربیان</a>
+                        <a href="{{ url_for('admin.trainer_panel') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.trainer_panel' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">📋 پنل مربی</a>
+
+                        <a href="{{ url_for('buffet.buffet_sales') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'buffet.buffet_sales' %}bg-amber-950 text-amber-400 border border-amber-800/50{% endif %}">🍔 بوفه</a>
+
+                        <a href="{{ url_for('public.gym_monitor') }}" target="_blank" class="hover:bg-gray-800 text-gray-400 px-2.5 py-2 rounded-lg transition">🖥️ مانیتور سالن ↗</a>
+
+                    </div>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    {% if current_user.is_authenticated %}
+
+                        <span class="text-[11px] text-gray-400 bg-gray-950 border border-gray-800 px-2 py-1 rounded">👤 {{ current_user.full_name }}</span>
+
+                        <a href="{{ url_for('admin.logout') }}" class="bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-900/50 px-2.5 py-1 rounded text-[11px] font-bold transition">🚪 خروج</a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="space-y-2 mb-6">
+                    {% for category, message in messages %}
+                        <div class="rounded-lg border px-4 py-3 text-sm {% if category == 'error' %}bg-rose-950/40 border-rose-800 text-rose-200{% elif category == 'success' %}bg-emerald-950/40 border-emerald-800 text-emerald-200{% else %}bg-cyan-950/40 border-cyan-800 text-cyan-200{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+
+
+    {% block scripts %}{% endblock %}
+
+</body>
+
+</html>
+

@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+env/
+
+# Secrets / environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.crt
+
+# Database files and backups
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+
+# Logs
+*.log
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test / Python caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Runtime-generated files
+instance/
+uploads/

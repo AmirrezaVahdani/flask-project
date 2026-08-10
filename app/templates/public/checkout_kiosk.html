@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کیوسک خروج و تحویل کمد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl text-center">
+        <div class="text-4xl mb-3">🔑</div>
+        <h1 class="text-xl font-black text-white">ثبت خروج و آزادسازی خودکار کمد</h1>
+        <p class="text-slate-400 text-xs mt-1 mb-6">کد ملی یا شماره کمد خود را وارد کرده و دکمه را لمس کنید</p>
+
+        <div class="flex flex-col gap-4">
+            <input type="text" id="checkoutInput" placeholder="کد ملی یا شماره کمد"
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-center text-xl text-amber-400 focus:outline-none focus:border-amber-500 transition">
+
+            <button onclick="submitCheckOut()" id="submitBtn"
+                class="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 font-black py-4 rounded-xl text-md transition shadow-lg">
+                🔓 ثبت خروج و تخلیه کمد
+            </button>
+        </div>
+        <div id="msgBox" class="mt-4 text-xs font-bold hidden"></div>
+    </div>
+
+    <script>
+        function submitCheckOut() {
+            const input = document.getElementById('checkoutInput').value.trim();
+            const btn = document.getElementById('submitBtn');
+            const msgBox = document.getElementById('msgBox');
+            if (!input) return;
+
+            btn.disabled = true;
+            btn.innerText = "در حال پردازش...";
+            msgBox.classList.add('hidden');
+
+            // تشخیص اینکه کاربر کدملی وارد کرده یا شماره کمد
+            const payload = isNaN(input) || input.length > 4 ? { national_id: input } : { locker_number: parseInt(input) };
+
+            fetch('/api/gate/check-out', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerText = "🔓 ثبت خروج و تخلیه کمد";
+                    msgBox.classList.remove('hidden', 'text-rose-400', 'text-emerald-400');
+
+                    if (data.success === true) {
+                        msgBox.innerText = data.message;
+                        msgBox.classList.add('text-emerald-400');
+                        document.getElementById('checkoutInput').value = "";
+                    } else {
+                        msgBox.innerText = data.error;
+                        msgBox.classList.add('text-rose-400');
+                    }
+                }).catch(() => {
+                    btn.disabled = false;
+                    btn.innerText = "🔓 ثبت خروج و تخلیه کمد";
+                    msgBox.innerText = "خطا در ارتباط با سرور.";
+                    msgBox.classList.remove('hidden');
+                    msgBox.classList.add('text-rose-400');
+                });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}مدیریت پلن‌های باشگاه{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-white">⚙️ تعریف و مدیریت پلن‌های ورزشی باشگاه</h1>
+    <p class="text-gray-400 text-xs mt-1">پلن‌های معاملاتی شهریه را ایجاد کنید تا در منوی تمدید اعضا در دسترس قرار گیرند.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-cyan-400">➕ ایجاد پلن جدید</h3>
+            <span class="text-[10px] text-gray-500">تنظیم سریع</span>
+        </div>
+        <form action="{{ url_for('admin.manage_plans') }}" method="POST" class="flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">نام پلن (مثلا: طلایی ۱ ماهه)</label>
+                <input type="text" name="name" required class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-sm focus:outline-none text-white focus:border-cyan-500">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">مدت اعتبار (تعداد روز)</label>
+                <input type="number" name="duration_days" required class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-sm focus:outline-none text-white focus:border-cyan-500">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">تعداد جلسات مجاز حضور</label>
+                <input type="number" name="total_sessions" required class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-sm focus:outline-none text-white focus:border-cyan-500">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">قیمت پلن (تومان)</label>
+                <input type="number" name="price" required class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-sm focus:outline-none text-white focus:border-cyan-500">
+            </div>
+            <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold p-2.5 rounded-lg transition">💾 ذخیره پلن در دیتابیس</button>
+        </form>
+    </div>
+
+    <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-lg lg:col-span-2 overflow-x-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-gray-300">📋 پلن‌های فعال و تعریف‌شده سیستم</h3>
+            <span class="text-[11px] text-gray-500">{{ plans|length }} پلن</span>
+        </div>
+        <table class="w-full text-right text-xs">
+            <thead class="bg-gray-950 text-gray-400 border-b border-gray-800">
+                <tr>
+                    <th class="p-3">نام پلن ورزشی</th>
+                    <th class="p-3">اعتبار زمانی</th>
+                    <th class="p-3">جلسات مجاز</th>
+                    <th class="p-3">قیمت خرید (تومان)</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/50">
+                {% for plan in plans %}
+                <tr class="hover:bg-gray-800/20">
+                    <td class="p-3 font-bold text-white">{{ plan.name }}</td>
+                    <td class="p-3 text-gray-300">{{ plan.duration_days }} روز</td>
+                    <td class="p-3 text-gray-300">{{ plan.total_sessions }} جلسه</td>
+                    <td class="p-3 text-emerald-400 font-bold">{{ plan.price }} تومان</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="p-6 text-center text-gray-500">هنوز هیچ پلنی تعریف نکرده‌اید! از فرم سمت راست استفاده کنید.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

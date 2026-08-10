@@ -1,0 +1,14 @@
+[Unit]
+Description=Smart Gym Locker Service
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/smart_gym_v3.1.2
+ExecStart=/home/pi/smart_gym_v3.1.2/.venv/bin/python /home/pi/smart_gym_v3.1.2/run.py
+Restart=always
+User=pi
+Environment=PATH=/home/pi/smart_gym_v3.1.2/.venv/bin:/usr/bin:/bin
+EnvironmentFile=/home/pi/smart_gym_v3.1.2/.env
+
+[Install]
+WantedBy=multi-user.target

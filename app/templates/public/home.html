@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خانه هوشمند باشگاه</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-3xl w-full bg-slate-900 border border-slate-800 rounded-3xl p-10 shadow-2xl text-center">
+        <h1 class="text-4xl font-black text-cyan-400 mb-4">به سامانه هوشمند باشگاه خوش آمدید</h1>
+        <p class="text-slate-400 text-sm leading-7 mb-8">لطفاً یکی از بخش‌های زیر را انتخاب کنید تا به صفحه کیوسک ورود، خروج یا مانیتورینگ سالن منتقل شوید.</p>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+            <a href="{{ url_for('public.gym_kiosk') }}" class="rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white p-5 font-bold transition shadow-lg">🟦 کیوسک ورود</a>
+            <a href="{{ url_for('public.gym_checkout_kiosk') }}" class="rounded-2xl bg-amber-600 hover:bg-amber-500 text-slate-950 p-5 font-bold transition shadow-lg">🟧 کیوسک خروج</a>
+            <a href="{{ url_for('public.gym_monitor') }}" class="rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-100 p-5 font-bold transition shadow-lg">🟩 مانیتور سالن</a>
+        </div>
+    </div>
+</body>
+
+</html>

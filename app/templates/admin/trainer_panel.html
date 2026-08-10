@@ -1,0 +1,77 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}پنل اختصاصی مربیان{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-white">📋 لیست شاگردان مربی</h1>
+    <p class="text-gray-400 text-xs mt-1">مدیریت، فیلتر و مشاهده وضعیت ورزشکارانی که با مربی خاص اشتراک دارند.</p>
+</div>
+
+<div class="bg-gradient-to-r from-cyan-950/40 to-gray-900 border border-cyan-800/40 p-5 rounded-xl shadow-lg mb-6">
+    <form action="{{ url_for('admin.trainer_panel') }}" method="GET" class="flex flex-col sm:flex-row gap-4 items-end">
+        <div class="flex-1 w-full">
+            <label class="block text-xs text-gray-400 mb-1">نام مربی را جهت فیلتر شاگردان وارد کنید:</label>
+            <input type="text" name="trainer_name" value="{{ trainer_name or '' }}" required 
+                   placeholder="مثال: استاد حسینی" 
+                   class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+        <button type="submit" class="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition shrink-0">
+            🔎 جستجوی شاگردان
+        </button>
+    </form>
+</div>
+
+{% if trainer_name %}
+<div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-lg overflow-x-auto">
+    <div class="flex items-center justify-between mb-4 border-b border-gray-800 pb-3">
+        <h3 class="text-sm font-bold text-gray-300">
+            👥 ورزشکاران تحت نظر مربی: <span class="text-cyan-400 font-black">{{ trainer_name }}</span>
+        </h3>
+        <span class="bg-gray-950 border border-gray-800 text-gray-400 text-[10px] px-2.5 py-1 rounded">
+            تعداد اعضا: {{ my_students|length }} نفر
+        </span>
+    </div>
+    
+    <table class="w-full text-right text-sm">
+        <thead class="bg-gray-950 text-gray-400 text-xs uppercase border-b border-gray-800">
+            <tr>
+                <th class="p-3">نام ورزشکار</th>
+                <th class="p-3">نوع پلن اشتراک</th>
+                <th class="p-3">تاریخ پایان اعتبار</th>
+                <th class="p-3">جلسات باقی‌مانده</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/50">
+            {% for sub in my_students %}
+            <tr class="hover:bg-gray-800/20 transition">
+                <td class="p-3 font-bold text-white">
+                    <a href="{{ url_for('admin.user_profile', user_id=sub.user.id) }}" class="text-cyan-400 hover:underline flex items-center gap-1">
+                        <span>{{ sub.user.full_name }}</span>
+                        <span class="text-[10px] font-normal text-gray-500">(مشاهده شناسنامه)</span>
+                    </a>
+                </td>
+                <td class="p-3 text-gray-300">{{ sub.package_name }}</td>
+                <td class="p-3 text-gray-400 font-mono">{{ sub.end_date }}</td>
+                <td class="p-3">
+                    <span class="text-amber-400 font-bold bg-amber-950/40 border border-amber-900/40 px-2 py-0.5 rounded text-xs">
+                        {{ sub.remaining_sessions }} جلسه
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="p-8 text-center text-gray-500 text-xs">
+                    هیچ شاگرد یا ورزشکار فعالی با نام مربی <span class="text-white">«{{ trainer_name }}»</span> در سیستم یافت نشد.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-gray-900/40 border border-gray-800/60 rounded-xl p-8 text-center text-gray-500 text-xs">
+    💡 برای مشاهده لیست ورزشکاران، لطفاً نام مربی مورد نظر را در کادر بالا وارد کرده و دکمه جستجو را بزنید.
+</div>
+{% endif %}
+{% endblock %}

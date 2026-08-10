@@ -1,0 +1,143 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}داشبورد مدیریت هوشمند باشگاه{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-white">📊 کنترل پنل مدیریت مجموعه ورزشی</h1>
+    <p class="text-gray-400 text-xs mt-1">خلاصه وضعیت، مدیریت وضعیت کمدها و آنالیز ترافیک سالن</p>
+</div>
+
+{% if expiring_subs %}
+<div class="bg-amber-950/60 border border-amber-800 text-amber-200 p-4 rounded-xl mb-6 shadow-md">
+    <h3 class="text-sm font-black flex items-center gap-2">⚠️ هشدار انقضای نزدیک اشتراک (کمتر از ۳ روز):</h3>
+    <ul class="text-xs mt-2 list-disc list-inside flex flex-col gap-1.5 opacity-90">
+        {% for sub in expiring_subs %}
+            <li>ورزشکار <a href="{{ url_for('admin.user_profile', user_id=sub.user.id) }}" class="text-cyan-400 hover:underline font-bold">{{ sub.user.full_name }}</a> با پلن ({{ sub.package_name }}) در تاریخ <span class="text-rose-400 font-bold underline">{{ sub.end_date }}</span> مهلتش تمام می‌شود. (مربی: {{ sub.trainer_name }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+    <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-lg">
+        <div class="text-gray-400 text-xs font-bold">کل ورزشکاران عضو</div>
+        <div class="text-3xl font-black text-cyan-400 mt-2">{{ total_members }} نفر</div>
+        <div class="text-[11px] text-gray-500 mt-2">عضو فعلی در سامانه</div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-lg">
+        <div class="text-gray-400 text-xs font-bold">افراد حاضر در سالن</div>
+        <div class="text-3xl font-black text-emerald-400 mt-2">{{ active_presents }} نفر</div>
+        <div class="text-[11px] text-gray-500 mt-2">در لحظه‌ی جاری</div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-lg">
+        <div class="text-gray-400 text-xs font-bold">کمدهای خارج از سرویس</div>
+        <div class="text-3xl font-black text-rose-400 mt-2">{{ broken_lockers }} کمد</div>
+        <div class="text-[11px] text-gray-500 mt-2">نیازمند سرویس یا تعویض</div>
+    </div>
+    <div class="bg-gradient-to-br from-cyan-950 to-gray-900 border border-cyan-800 p-5 rounded-xl shadow-lg">
+        <div class="text-gray-400 text-xs font-bold">دسترسی سریع</div>
+        <div class="flex flex-wrap gap-2 mt-3">
+            <a href="{{ url_for('admin.manage_users') }}" class="text-[11px] bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg">👥 اعضا</a>
+            <a href="{{ url_for('admin.manage_plans') }}" class="text-[11px] bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg">⚙️ پلن‌ها</a>
+            <a href="{{ url_for('admin.trainer_panel') }}" class="text-[11px] bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg">📋 مربیان</a>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-lg">
+        <h3 class="text-sm font-bold text-gray-300 mb-4">📈 تحلیل درآمدهای حاصل از شهریه</h3>
+        <canvas id="financialChart" class="max-h-64"></canvas>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-lg">
+        <h3 class="text-sm font-bold text-gray-300 mb-4">🕒 شلوغ‌ترین ساعات تردد باشگاه</h3>
+        <canvas id="trafficChart" class="max-h-64"></canvas>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
+    <div class="xl:col-span-3 bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-md font-black text-white">🔑 وضعیت و مدیریت کمدهای رختکن</h3>
+            <span class="text-[11px] text-gray-400">تغییر وضعیت با یک کلیک</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+        {% for item in locker_details %}
+        {% set locker = item.locker %}
+        <div class="min-h-[150px] border rounded-xl p-3 text-center transition shadow-sm flex flex-col justify-between {% if locker.status == 'available' %}bg-gray-950 border-gray-800 text-gray-300{% elif locker.status == 'occupied' %}bg-cyan-950/40 border-cyan-800 text-cyan-400{% else %}bg-rose-950/40 border-rose-900 text-rose-400{% endif %}">
+            <div>
+                <div class="text-xs font-black">کمد {{ locker.locker_number }}</div>
+                <div class="text-[10px] mt-1 opacity-70">
+                    {% if locker.status == 'available' %}خالی
+                    {% elif locker.status == 'occupied' %}پر
+                    {% else %}خراب{% endif %}
+                </div>
+                <div class="mt-2 text-[10px] leading-4 break-words">
+                    {% if item.owner %}
+                    <div class="font-bold text-cyan-300">{{ item.owner.full_name }}</div>
+                    <div class="text-[9px] text-gray-200 mt-1">{{ item.presence_status }}</div>
+                    {% else %}
+                    <div class="text-gray-400">بدون کاربر</div>
+                    {% endif %}
+                </div>
+            </div>
+            <form action="{{ url_for('admin.toggle_locker_status', locker_id=locker.id) }}" method="POST" class="mt-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-[9px] bg-gray-800 hover:bg-gray-700 text-white px-2 py-1 rounded transition block w-full">🔧 تغییر</button>
+            </form>
+        </div>
+        {% endfor %}
+            </div>
+    </div>
+
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-md font-black text-white">👨‍🏫 خلاصه مربیان</h3>
+            <span class="text-[11px] text-gray-400">تعداد شاگرد فعال</span>
+        </div>
+        {% if trainer_summary %}
+        <div class="space-y-2">
+            {% for item in trainer_summary %}
+            <div class="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-950 px-3 py-2 text-sm">
+                <span class="text-gray-300">{{ item.trainer_name }}</span>
+                <span class="text-cyan-400 font-bold">{{ item.student_count }} شاگرد</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-sm text-gray-500">هنوز مربی با اشتراک فعال ثبت نشده است.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    fetch('{{ url_for("admin.analytics_data") }}')
+        .then(res => res.json())
+        .then(data => {
+            new Chart(document.getElementById('financialChart'), {
+                type: 'line',
+                data: {
+                    labels: data.financial.labels,
+                    datasets: [{ label: 'درآمد', data: data.financial.data, borderColor: '#06b6d4', tension: 0.3, fill: false }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            new Chart(document.getElementById('trafficChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.traffic.labels,
+                    datasets: [{ label: 'تعداد ورزشکار', data: data.traffic.data, backgroundColor: '#10b981' }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        });
+</script>
+{% endblock %}

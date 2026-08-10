@@ -1,0 +1,68 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}مدیریت مربیان{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-white">👨‍🏫 مدیریت مربیان باشگاه</h1>
+    <p class="text-gray-400 text-xs mt-1">افزودن، حذف و مشاهده مربیان موجود در سیستم</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-cyan-400">➕ افزودن مربی جدید</h3>
+            <span class="text-[10px] text-gray-500">ورودی سریع</span>
+        </div>
+        <form action="{{ url_for('admin.manage_trainers') }}" method="POST" class="flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="create">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">نام مربی</label>
+                <input type="text" name="name" required class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">تخصص / توضیح</label>
+                <input type="text" name="specialty" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+            </div>
+            <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold p-2.5 rounded-lg transition">💾 ذخیره مربی</button>
+        </form>
+    </div>
+
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-lg lg:col-span-2 overflow-x-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-gray-300">📋 لیست مربیان ثبت‌شده</h3>
+            <span class="text-[11px] text-gray-500">{{ trainers|length }} مربی</span>
+        </div>
+        <table class="w-full text-right text-sm">
+            <thead class="bg-gray-950 text-gray-400 text-xs uppercase border-b border-gray-800">
+                <tr>
+                    <th class="p-3">نام مربی</th>
+                    <th class="p-3">تخصص</th>
+                    <th class="p-3">عملیات</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/60">
+                {% for trainer in trainers %}
+                <tr class="hover:bg-gray-800/20 transition">
+                    <td class="p-3 font-bold text-white">{{ trainer.name }}</td>
+                    <td class="p-3 text-gray-400">{{ trainer.specialty or '—' }}</td>
+                    <td class="p-3">
+                        <form action="{{ url_for('admin.manage_trainers') }}" method="POST" class="inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="trainer_id" value="{{ trainer.id }}">
+                            <button type="submit" class="bg-rose-700 hover:bg-rose-600 text-white text-[11px] px-3 py-1.5 rounded-lg transition">🗑 حذف</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="p-8 text-center text-gray-500 text-xs">هنوز مربی ثبت نشده است.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
