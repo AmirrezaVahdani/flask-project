@@ -1,0 +1,55 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}مدیریت کمدها{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-black text-white">🔧 مدیریت کمدها</h1>
+    <p class="text-gray-400 text-xs mt-1">در اینجا می‌توانید تعداد کمدها را تنظیم کرده و گزارش کمدها را خروجی بگیرید.</p>
+</div>
+
+<div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
+    <form method="POST" action="{{ url_for('admin.manage_lockers') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="flex gap-2 items-center">
+            <label class="text-sm text-gray-300">تعداد فعلی کمدها:</label>
+            <div class="font-bold text-cyan-400">{{ locker_count }}</div>
+            <input type="number" name="desired_count" min="0" class="ml-4 bg-gray-800 text-white px-3 py-2 rounded" placeholder="مثلاً 10">
+            <button class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded" type="submit">ذخیره</button>
+            <a href="{{ url_for('admin.export_lockers') }}" class="ml-2 bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded">📤 خروجی CSV</a>
+        </div>
+    </form>
+</div>
+
+<div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+    <h3 class="text-sm font-bold text-gray-300 mb-3">لیست کمدها</h3>
+    <div class="space-y-2">
+        {% for locker in lockers %}
+        <div class="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-950 px-3 py-2 text-sm">
+            <div class="flex items-center gap-3">
+                <div class="font-bold text-gray-200">کمد {{ locker.locker_number }}</div>
+                <div class="text-xs text-gray-400">{{ locker.status }}</div>
+                {% if locker.current_user_id %}
+                <div class="text-xs text-cyan-400">به‌نام: {{ locker.current_user_id }}</div>
+                {% endif %}
+            </div>
+            <div class="flex gap-2">
+                <form method="POST" action="{{ url_for('admin.toggle_locker_status', locker_id=locker.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="text-[11px] bg-gray-800 hover:bg-gray-700 text-white px-2 py-1 rounded">🔧 تغییر وضعیت</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.test_open_locker', locker_number=locker.locker_number) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded">🔆 تست باز</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.test_close_locker', locker_number=locker.locker_number) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="text-[11px] bg-rose-600 hover:bg-rose-500 text-white px-2 py-1 rounded">🔅 تست بستن</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

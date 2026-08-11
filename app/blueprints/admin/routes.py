@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_login import login_user, logout_user, current_user
 from app.auth import admin_required
 from app.extensions import db
@@ -19,6 +19,8 @@ from app.utils import (
 )
 from datetime import date, datetime, timedelta
 from sqlalchemy import desc, or_
+import csv
+import io
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -396,6 +398,97 @@ def toggle_locker_status(locker_id):
         locker.status = 'available'
     db.session.commit()
     return redirect(url_for('admin.admin_dashboard'))
+
+
+@admin_bp.route('/lockers/manage', methods=['GET', 'POST'])
+@admin_required
+def manage_lockers():
+    if request.method == 'POST':
+        desired_text = request.form.get('desired_count', '').strip()
+        if not desired_text.isdigit():
+            flash('تعداد کمد باید یک عدد صحیح مثبت باشد.')
+            return redirect(url_for('admin.manage_lockers'))
+
+        desired = int(desired_text)
+        current = Locker.query.count()
+
+        if desired > current:
+            # create new lockers with incremental locker_number
+            for i in range(current + 1, desired + 1):
+                db.session.add(Locker(locker_number=i, status='available'))
+            db.session.commit()
+            flash(f'{desired - current} کمد جدید ایجاد شد. مجموع کمدها: {desired}.')
+        elif desired < current:
+            to_remove = current - desired
+            # remove available lockers starting from highest locker_number
+            removable = (
+                Locker.query.filter_by(status='available')
+                .order_by(desc(Locker.locker_number))
+                .limit(to_remove)
+                .all()
+            )
+            removed_count = len(removable)
+            for l in removable:
+                db.session.delete(l)
+            db.session.commit()
+
+            if removed_count < to_remove:
+                flash(f'تنها {removed_count} کمدِ خالی قابل حذف بود؛ {to_remove - removed_count} کمد اشغال/خراب بودند و حذف نشدند. مجموع فعلی: {current - removed_count}.')
+            else:
+                flash(f'{removed_count} کمد حذف شد. مجموع کمدها: {desired}.')
+
+        else:
+            flash('تعداد کمد تغییری نکرد.')
+
+        return redirect(url_for('admin.manage_lockers'))
+
+    lockers = Locker.query.order_by(Locker.locker_number).all()
+    locker_count = len(lockers)
+    return render_template('admin/lockers.html', lockers=lockers, locker_count=locker_count)
+
+
+@admin_bp.route('/lockers/export', methods=['GET'])
+@admin_required
+def export_lockers():
+    lockers = Locker.query.order_by(Locker.locker_number).all()
+    si = io.StringIO()
+    writer = csv.writer(si)
+    writer.writerow(['id', 'locker_number', 'status', 'current_user_id'])
+    for l in lockers:
+        writer.writerow([l.id, l.locker_number, l.status, l.current_user_id or ''])
+
+    output = si.getvalue()
+    resp = Response(output, mimetype='text/csv')
+    resp.headers['Content-Disposition'] = 'attachment; filename=lockers.csv'
+    return resp
+
+
+@admin_bp.route('/lockers/<int:locker_number>/test-open', methods=['POST'])
+@admin_required
+def test_open_locker(locker_number):
+    from app.locker_hardware import get_locker_hardware_service
+
+    hw = get_locker_hardware_service()
+    result = hw.open_locker(locker_number)
+    if result.get('opened'):
+        flash(f'فرمان باز کردن برای کمد {locker_number} ارسال شد. (mode={result.get("mode")})')
+    else:
+        flash(f'خطا در ارسال فرمان به کمد {locker_number}: {result.get("error")}')
+    return redirect(url_for('admin.manage_lockers'))
+
+
+@admin_bp.route('/lockers/<int:locker_number>/test-close', methods=['POST'])
+@admin_required
+def test_close_locker(locker_number):
+    from app.locker_hardware import get_locker_hardware_service
+
+    hw = get_locker_hardware_service()
+    result = hw.close_locker(locker_number)
+    if result.get('closed'):
+        flash(f'فرمان بستن برای کمد {locker_number} ارسال شد. (mode={result.get("mode")})')
+    else:
+        flash(f'خطا در ارسال فرمان بستن به کمد {locker_number}: {result.get("error")}')
+    return redirect(url_for('admin.manage_lockers'))
 
 @admin_bp.route('/api/analytics-data')
 @admin_required

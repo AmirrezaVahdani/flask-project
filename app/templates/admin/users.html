@@ -85,12 +85,13 @@
                                     <option value="{{ plan.id }}">{{ plan.name }} ({{ plan.price }} ت)</option>
                                 {% endfor %}
                             </select>
-                            <div class="flex gap-1">
-                                <input type="text" 
-                                       name="trainer_name" 
-                                       placeholder="نام مربی مسئول" 
-                                       required
-                                       class="w-full bg-gray-900 border border-gray-800 rounded px-1.5 py-0.5 text-[10px] text-gray-300 focus:outline-none focus:border-cyan-500">
+                            <div class="flex gap-1 items-center">
+                                <select name="trainer_name" class="w-full bg-gray-900 border border-gray-800 rounded px-1.5 py-0.5 text-[10px] text-gray-300 focus:outline-none focus:border-cyan-500">
+                                    <option value="">بدون مربی</option>
+                                    {% for t in trainers %}
+                                    <option value="{{ t.name }}">{{ t.name }}</option>
+                                    {% endfor %}
+                                </select>
                                 <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-0.5 rounded text-[10px] transition shrink-0">⚡ شارژ</button>
                             </div>
                         </form>

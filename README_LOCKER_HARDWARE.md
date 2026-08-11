@@ -18,6 +18,15 @@
 - LOCKER_HARDWARE_GPIO_ACTIVE_STATE=1
 - LOCKER_OPEN_DURATION_SECONDS=30
 
+### نصب پیش‌نیازهای نرم‌افزاری در Raspberry Pi
+- نصب کتابخانه RPi.GPIO (یا استفاده از gpiozero):
+  - برای Raspbian/Ubuntu روی رزبری‌پای معمولا با:
+    - `sudo apt update && sudo apt install -y python3-rpi.gpio`
+  - یا با pip در محیط مجازی (در برخی توزیع‌ها نیازمند هدرهای سیستم است):
+    - `pip install RPi.GPIO`
+  - به‌عنوان جایگزین بالاتر‌سطح می‌توانید از `gpiozero` استفاده کنید:
+    - `pip install gpiozero`
+
 #### نگاشت پین‌های GPIO به کمدها (LED)
 - LOCKER_HARDWARE_GPIO_PIN_MAP="1:17,2:27,3:22"
   - شماره سمت چپ = شماره کمد
