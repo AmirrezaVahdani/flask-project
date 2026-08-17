@@ -12,7 +12,7 @@ class Config:
 
     DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
 
-    LOCKER_COUNT = int(os.environ.get("LOCKER_COUNT", "4"))
+    LOCKER_COUNT = int(os.environ.get("LOCKER_COUNT", "3"))
 
     # Comma-separated origins for CORS; empty = same-origin only
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "")

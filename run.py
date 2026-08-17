@@ -12,11 +12,15 @@ with app.app_context():
     existing_lockers = Locker.query.count()
     if existing_lockers < locker_count:
         for i in range(existing_lockers + 1, locker_count + 1):
-            db.session.add(Locker(locker_number=i, status="available"))
+            # Check if locker already exists to avoid duplicate key errors
+            if not Locker.query.filter_by(locker_number=i).first():
+                db.session.add(Locker(locker_number=i, status="available"))
         db.session.commit()
-        print(
-            f"--> {locker_count - existing_lockers} locker(s) created, total {locker_count} lockers."
-        )
+        created = locker_count - existing_lockers
+        if created > 0:
+            print(
+                f"--> {created} locker(s) created, total {locker_count} lockers."
+            )
 
     if User.query.filter_by(role="admin").count() == 0:
         admin_user = User(
