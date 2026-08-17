@@ -6,8 +6,14 @@ from typing import Dict, Optional
 
 from flask import current_app
 
-logger = logging.getLogger(__name__)
+try:
+    import RPi.GPIO as GPIO
+    GPIO_AVAILABLE = True
+except Exception:
+    GPIO = None
+    GPIO_AVAILABLE = False
 
+logger = logging.getLogger(__name__)
 
 class LockerHardwareService:
     def __init__(self, app=None):
@@ -26,6 +32,22 @@ class LockerHardwareService:
         self.gpio_active_state = int(self._get_config("LOCKER_HARDWARE_GPIO_ACTIVE_STATE", "1"))
         self._timers: Dict[int, threading.Timer] = {}
         self._timer_lock = threading.Lock()
+        self._init_gpio()
+
+    def _init_gpio(self) -> None:
+        if self.mode != "gpio" or not GPIO_AVAILABLE:
+            if self.mode == "gpio" and not GPIO_AVAILABLE:
+                logger.warning("LOCKER_HARDWARE_MODE is gpio but RPi.GPIO is not available")
+            return
+        try:
+            GPIO.setwarnings(False)
+            GPIO.setmode(GPIO.BCM)
+            for pin in set(self.gpio_pin_map.values()):
+                GPIO.setup(int(pin), GPIO.OUT)
+                GPIO.output(int(pin), 0 if self.gpio_active_state == 1 else 1)
+            logger.info("GPIO initialized for pins: %s", self.gpio_pin_map)
+        except Exception as exc:
+            logger.error("GPIO init failed: %s", exc)
 
     def _get_config(self, key, default):
         if self.app is not None:
@@ -46,7 +68,6 @@ class LockerHardwareService:
         pin_map: Dict[int, int] = {}
         if not value:
             return pin_map
-
         for item in str(value).split(","):
             item = item.strip()
             if not item or ":" not in item:
@@ -77,7 +98,6 @@ class LockerHardwareService:
                 "mode": self.mode,
                 "locker_number": locker_number,
             }
-
         if self.mode in {"command", "shell"}:
             result = self._run_command(self.open_command, locker_number, "open")
             if result["ok"]:
@@ -89,7 +109,6 @@ class LockerHardwareService:
                 "locker_number": locker_number,
                 "error": result.get("error"),
             }
-
         if self.mode == "gpio":
             result = self._run_gpio(locker_number, open_state=True)
             if result["ok"]:
@@ -101,14 +120,12 @@ class LockerHardwareService:
                 "locker_number": locker_number,
                 "error": result.get("error"),
             }
-
         raise ValueError(f"Unsupported locker hardware mode: {self.mode}")
 
     def close_locker(self, locker_number: int) -> Dict[str, object]:
         if self.mode == "mock":
             logger.info("Mock locker hardware: closing locker %s", locker_number)
             return {"closed": True, "locker_number": locker_number, "mode": self.mode}
-
         if self.mode in {"command", "shell"}:
             result = self._run_command(self.close_command, locker_number, "close")
             return {
@@ -117,7 +134,6 @@ class LockerHardwareService:
                 "mode": self.mode,
                 "error": result.get("error"),
             }
-
         if self.mode == "gpio":
             result = self._run_gpio(locker_number, open_state=False)
             return {
@@ -126,7 +142,6 @@ class LockerHardwareService:
                 "mode": self.mode,
                 "error": result.get("error"),
             }
-
         return {"closed": False, "locker_number": locker_number, "mode": self.mode}
 
     def _schedule_close(self, locker_number: int) -> None:
@@ -146,34 +161,29 @@ class LockerHardwareService:
         if not command_template:
             logger.warning("No command template provided for locker %s %s action", locker_number, action)
             return {"ok": True, "error": None}
-
         command = command_template.format(locker_number=locker_number, action=action)
         try:
             completed = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=10)
             if completed.returncode != 0:
                 return {"ok": False, "error": completed.stderr or completed.stdout}
             return {"ok": True, "error": None}
-        except Exception as exc:  # pragma: no cover - defensive path
+        except Exception as exc:
             return {"ok": False, "error": str(exc)}
 
     def _run_gpio(self, locker_number: int, open_state: bool):
         pin = self._get_gpio_pin(locker_number, open_state)
         if pin is None:
             return {"ok": True, "error": None}
-
+        if not GPIO_AVAILABLE:
+            return {"ok": False, "error": "RPi.GPIO not available"}
         try:
-            import RPi.GPIO as GPIO  # type: ignore
-        except Exception as exc:  # pragma: no cover - defensive path
-            return {"ok": False, "error": f"RPi.GPIO not available: {exc}"}
-
-        try:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup(int(pin), GPIO.OUT)
-            GPIO.output(int(pin), self.gpio_active_state if open_state else 0)
+            GPIO.output(
+                int(pin),
+                self.gpio_active_state if open_state else (0 if self.gpio_active_state == 1 else 1),
+            )
             return {"ok": True, "error": None}
-        except Exception as exc:  # pragma: no cover - defensive path
+        except Exception as exc:
             return {"ok": False, "error": str(exc)}
-
 
 def get_locker_hardware_service() -> LockerHardwareService:
     service = current_app.extensions.get("locker_hardware")
