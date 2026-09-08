@@ -11,12 +11,13 @@
     <title>{% block title %}سیستم مدیریت هوشمند باشگاه{% endblock %}</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
     {% block head %}{% endblock %}
 
 </head>
 
-<body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex flex-col">
+<body class="admin-shell bg-gray-950 text-gray-100 font-sans min-h-screen flex flex-col">
 
 
 
@@ -28,7 +29,7 @@
 
                 <div class="flex items-center gap-6">
 
-                    <div class="text-xl font-black text-cyan-400 tracking-wider flex items-center gap-2">
+                    <div class="brand-mark text-xl font-black tracking-wider flex items-center gap-2">
 
                         💪 <span>باشگاه هوشمند</span>
 
@@ -36,18 +37,18 @@
 
                     <div class="hidden md:flex items-center gap-1 text-xs font-medium text-gray-300">
 
-                        <a href="{{ url_for('admin.admin_dashboard') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.admin_dashboard' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">📊 داشبورد</a>
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.admin_dashboard' %}is-active{% endif %}">📊 داشبورد</a>
 
-                        <a href="{{ url_for('admin.manage_users') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_users' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">👥 اعضا</a>
+                        <a href="{{ url_for('admin.manage_users') }}" class="nav-link px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_users' %}is-active{% endif %}">👥 اعضا</a>
 
-                        <a href="{{ url_for('admin.manage_plans') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_plans' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">⚙️ پلن‌ها</a>
+                        <a href="{{ url_for('admin.manage_plans') }}" class="nav-link px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_plans' %}is-active{% endif %}">⚙️ پلن‌ها</a>
 
-                        <a href="{{ url_for('admin.manage_trainers') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_trainers' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">👨‍🏫 مربیان</a>
-                        <a href="{{ url_for('admin.trainer_panel') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.trainer_panel' %}bg-cyan-950 text-cyan-400 border border-cyan-800/50{% endif %}">📋 پنل مربی</a>
+                        <a href="{{ url_for('admin.manage_trainers') }}" class="nav-link px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.manage_trainers' %}is-active{% endif %}">👨‍🏫 مربیان</a>
+                        <a href="{{ url_for('admin.trainer_panel') }}" class="nav-link px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'admin.trainer_panel' %}is-active{% endif %}">📋 پنل مربی</a>
 
-                        <a href="{{ url_for('buffet.buffet_sales') }}" class="hover:bg-gray-800 hover:text-white px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'buffet.buffet_sales' %}bg-amber-950 text-amber-400 border border-amber-800/50{% endif %}">🍔 بوفه</a>
+                        <a href="{{ url_for('buffet.buffet_sales') }}" class="nav-link px-2.5 py-2 rounded-lg transition {% if request.endpoint == 'buffet.buffet_sales' %}is-active{% endif %}">🍔 بوفه</a>
 
-                        <a href="{{ url_for('public.gym_monitor') }}" target="_blank" class="hover:bg-gray-800 text-gray-400 px-2.5 py-2 rounded-lg transition">🖥️ مانیتور سالن ↗</a>
+                        <a href="{{ url_for('public.gym_monitor') }}" target="_blank" class="nav-link px-2.5 py-2 rounded-lg transition">🖥️ مانیتور سالن ↗</a>
 
                     </div>
 
@@ -57,7 +58,7 @@
 
                     {% if current_user.is_authenticated %}
 
-                        <span class="text-[11px] text-gray-400 bg-gray-950 border border-gray-800 px-2 py-1 rounded">👤 {{ current_user.full_name }}</span>
+                        <span class="text-[11px] text-gray-300 bg-slate-950/70 border border-slate-700 px-2.5 py-1.5 rounded-full">👤 {{ current_user.full_name }}</span>
 
                         <a href="{{ url_for('admin.logout') }}" class="bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-900/50 px-2.5 py-1 rounded text-[11px] font-bold transition">🚪 خروج</a>
 

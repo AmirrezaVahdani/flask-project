@@ -1,0 +1,115 @@
+:root {
+    --ink: #07111f;
+    --panel: #0d1b2a;
+    --panel-soft: #102337;
+    --line: #1d354b;
+    --muted: #8da3b8;
+    --cyan: #35d0d0;
+    --green: #42d392;
+    --amber: #f4b860;
+}
+
+* {
+    scrollbar-color: #29445d var(--ink);
+    scrollbar-width: thin;
+}
+
+body.admin-shell,
+body.public-shell {
+    background-color: var(--ink);
+    background-image: radial-gradient(circle at 90% 0%, rgba(53, 208, 208, 0.09), transparent 30rem),
+        radial-gradient(circle at 0% 100%, rgba(66, 211, 146, 0.06), transparent 26rem);
+}
+
+.admin-shell nav {
+    background: rgba(13, 27, 42, 0.92);
+    border-color: var(--line);
+    backdrop-filter: blur(16px);
+}
+
+.admin-shell .brand-mark {
+    color: var(--cyan);
+    letter-spacing: 0.02em;
+}
+
+.admin-shell .surface {
+    background: rgba(13, 27, 42, 0.86);
+    border: 1px solid var(--line);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.2);
+}
+
+.admin-shell input,
+.admin-shell select,
+.admin-shell textarea {
+    border-color: var(--line);
+}
+
+.admin-shell input:focus,
+.admin-shell select:focus,
+.admin-shell textarea:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(53, 208, 208, 0.12);
+}
+
+.admin-shell .nav-link {
+    border: 1px solid transparent;
+    color: #a9bbcc;
+}
+
+.admin-shell .nav-link:hover,
+.admin-shell .nav-link.is-active {
+    background: rgba(53, 208, 208, 0.1);
+    border-color: rgba(53, 208, 208, 0.25);
+    color: #b8ffff;
+}
+
+.public-shell .public-panel {
+    background: rgba(13, 27, 42, 0.88);
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(14px);
+}
+
+.public-shell .action-tile {
+    min-height: 10rem;
+    transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.public-shell .action-tile:hover {
+    transform: translateY(-4px);
+}
+
+.public-shell .kiosk-input {
+    min-height: 4rem;
+    letter-spacing: 0.18em;
+}
+
+.public-shell .kiosk-button {
+    min-height: 3.75rem;
+}
+
+@media (max-width: 640px) {
+    .admin-shell main {
+        padding: 1rem;
+    }
+
+    .public-shell .public-panel {
+        padding: 1.25rem;
+    }
+}
+
+.admin-shell main > div > .bg-gray-900,
+.admin-shell main > .bg-gray-900,
+.admin-shell main > div > .bg-gray-950,
+.admin-shell main > .bg-gray-950 {
+    background-color: rgba(13, 27, 42, 0.86);
+    border-color: var(--line);
+}
+
+.admin-shell main table thead {
+    background-color: rgba(7, 17, 31, 0.72);
+}
+
+.admin-shell main table tbody tr:hover {
+    background-color: rgba(53, 208, 208, 0.05);
+}

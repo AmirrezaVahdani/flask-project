@@ -65,6 +65,10 @@ def create_app(config_class=Config):
 
     app.register_blueprint(buffet_bp, url_prefix="/buffet")
 
+    from app.blueprints.member import member_bp
+
+    app.register_blueprint(member_bp, url_prefix="/member")
+
     @app.route("/")
     def index():
         return redirect(url_for("public.home"))

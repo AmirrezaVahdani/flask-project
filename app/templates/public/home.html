@@ -6,17 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>خانه هوشمند باشگاه</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-3xl w-full bg-slate-900 border border-slate-800 rounded-3xl p-10 shadow-2xl text-center">
-        <h1 class="text-4xl font-black text-cyan-400 mb-4">به سامانه هوشمند باشگاه خوش آمدید</h1>
-        <p class="text-slate-400 text-sm leading-7 mb-8">لطفاً یکی از بخش‌های زیر را انتخاب کنید تا به صفحه کیوسک ورود، خروج یا مانیتورینگ سالن منتقل شوید.</p>
+<body class="public-shell bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-6">
+    <div class="public-panel max-w-3xl w-full border rounded-3xl p-8 sm:p-10 text-center">
+        <div class="text-xs uppercase tracking-[0.28em] text-emerald-400 mb-4">SMART GYM / FRONT DESK</div>
+        <h1 class="text-3xl sm:text-4xl font-black text-cyan-300 mb-4">مرکز عملیات باشگاه</h1>
+        <p class="text-slate-400 text-sm leading-7 mb-8 max-w-xl mx-auto">ورود ورزشکار، خروج و نمایش وضعیت رختکن را از مسیر مناسب انتخاب کنید.</p>
 
-        <div class="grid gap-4 sm:grid-cols-3">
-            <a href="{{ url_for('public.gym_kiosk') }}" class="rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white p-5 font-bold transition shadow-lg">🟦 کیوسک ورود</a>
-            <a href="{{ url_for('public.gym_checkout_kiosk') }}" class="rounded-2xl bg-amber-600 hover:bg-amber-500 text-slate-950 p-5 font-bold transition shadow-lg">🟧 کیوسک خروج</a>
-            <a href="{{ url_for('public.gym_monitor') }}" class="rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-100 p-5 font-bold transition shadow-lg">🟩 مانیتور سالن</a>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <a href="{{ url_for('public.gym_kiosk') }}" class="action-tile rounded-2xl border border-cyan-400/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-100 p-5 font-bold transition shadow-lg flex flex-col justify-center gap-2"><span class="text-3xl">↗</span><span>کیوسک ورود</span><small class="text-cyan-200/60 text-[11px] font-normal">ثبت حضور و تخصیص کمد</small></a>
+            <a href="{{ url_for('public.gym_checkout_kiosk') }}" class="action-tile rounded-2xl border border-amber-400/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-100 p-5 font-bold transition shadow-lg flex flex-col justify-center gap-2"><span class="text-3xl">↙</span><span>کیوسک خروج</span><small class="text-amber-200/60 text-[11px] font-normal">آزادسازی کمد</small></a>
+            <a href="{{ url_for('public.gym_monitor') }}" class="action-tile rounded-2xl border border-emerald-400/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-100 p-5 font-bold transition shadow-lg flex flex-col justify-center gap-2"><span class="text-3xl">◉</span><span>مانیتور سالن</span><small class="text-emerald-200/60 text-[11px] font-normal">ظرفیت و تردد زنده</small></a>
+            <a href="{{ url_for('member.login') }}" class="action-tile rounded-2xl border border-fuchsia-400/30 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-100 p-5 font-bold transition shadow-lg flex flex-col justify-center gap-2"><span class="text-3xl">◎</span><span>پنل اعضا</span><small class="text-fuchsia-200/60 text-[11px] font-normal">اشتراک، مربی و کیف پول</small></a>
         </div>
     </div>
 </body>

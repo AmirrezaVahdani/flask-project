@@ -1,0 +1,103 @@
+{% extends 'member/base.html' %}
+
+{% block title %}پنل شخصی {{ user.full_name }}{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-7">
+    <div>
+        <div class="text-xs uppercase tracking-[0.2em] text-emerald-400 mb-2">MEMBER SPACE</div>
+        <h1 class="text-2xl sm:text-3xl font-black text-white">سلام {{ user.full_name }}</h1>
+        <p class="text-slate-400 text-sm mt-2">وضعیت باشگاه و اشتراک خودت را از خانه مدیریت کن.</p>
+    </div>
+    <a href="{{ url_for('member.logout') }}" class="text-xs text-rose-300 border border-rose-900/60 bg-rose-950/30 rounded-lg px-3 py-2 hover:bg-rose-900/40">خروج از پنل</a>
+</div>
+
+<div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="surface rounded-2xl p-4">
+        <div class="text-xs text-slate-400">جلسات باقی‌مانده</div>
+        <div class="text-2xl font-black text-cyan-300 mt-2">{{ active_sub.remaining_sessions if active_sub and active_sub.remaining_sessions is not none else '—' }}</div>
+    </div>
+    <div class="surface rounded-2xl p-4">
+        <div class="text-xs text-slate-400">روزهای باقی‌مانده</div>
+        <div class="text-2xl font-black text-emerald-300 mt-2">{{ days_left }}</div>
+    </div>
+    <div class="surface rounded-2xl p-4">
+        <div class="text-xs text-slate-400">موجودی کیف پول</div>
+        <div class="text-xl font-black text-amber-300 mt-2">{{ user.wallet_balance }} <span class="text-xs font-normal">تومان</span></div>
+    </div>
+    <div class="surface rounded-2xl p-4">
+        <div class="text-xs text-slate-400">امتیاز شما</div>
+        <div class="text-2xl font-black text-fuchsia-300 mt-2">{{ user.gamification_points }}</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+    <section class="surface rounded-2xl p-5 xl:col-span-2">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h2 class="text-lg font-black text-white">اشتراک فعلی</h2>
+                <p class="text-xs text-slate-500 mt-1">جزئیات پلن و مربی انتخاب‌شده</p>
+            </div>
+            {% if active_sub %}<span class="text-xs text-emerald-300 bg-emerald-950/40 border border-emerald-800/50 rounded-full px-3 py-1">فعال</span>{% endif %}
+        </div>
+        {% if active_sub %}
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            <div class="bg-slate-950/70 rounded-xl p-3"><div class="text-xs text-slate-500">پلن</div><div class="text-white font-bold mt-1">{{ active_sub.package_name }}</div></div>
+            <div class="bg-slate-950/70 rounded-xl p-3"><div class="text-xs text-slate-500">پایان اعتبار</div><div class="text-white font-bold mt-1">{{ active_sub.end_date or 'نامحدود' }}</div></div>
+            <div class="bg-slate-950/70 rounded-xl p-3"><div class="text-xs text-slate-500">مربی</div><div class="text-amber-300 font-bold mt-1">{{ active_sub.trainer_name or 'بدون مربی' }}</div></div>
+            <div class="bg-slate-950/70 rounded-xl p-3"><div class="text-xs text-slate-500">وضعیت حضور</div><div class="text-cyan-300 font-bold mt-1">{% if last_attendance and not last_attendance.check_out %}داخل باشگاه{% else %}خارج از باشگاه{% endif %}</div></div>
+        </div>
+        {% else %}
+        <div class="rounded-xl border border-amber-800/50 bg-amber-950/20 text-amber-200 text-sm p-4">اشتراک فعالی ندارید. از بخش تمدید، یک پلن انتخاب کنید.</div>
+        {% endif %}
+    </section>
+
+    <section class="surface rounded-2xl p-5">
+        <h2 class="text-lg font-black text-white">وضعیت کمد</h2>
+        {% if current_locker %}
+            <div class="mt-5 text-center rounded-2xl border border-cyan-700/50 bg-cyan-950/30 p-5"><div class="text-xs text-slate-400">کمد فعلی شما</div><div class="text-4xl font-black text-cyan-300 mt-2">{{ current_locker.locker_number }}</div><div class="text-xs text-emerald-300 mt-2">در اختیار شما</div></div>
+        {% else %}
+            <div class="mt-5 rounded-xl bg-slate-950/70 p-5 text-center text-sm text-slate-500">در حال حاضر کمدی به شما اختصاص ندارد.</div>
+        {% endif %}
+    </section>
+</div>
+
+<section class="surface rounded-2xl p-5 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+        <div><h2 class="text-lg font-black text-white">تمدید یا خرید اشتراک</h2><p class="text-xs text-slate-500 mt-1">هزینه از کیف پول شما کسر می‌شود.</p></div>
+        <span class="text-xs text-amber-300">موجودی فعلی: {{ user.wallet_balance }} تومان</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {% for plan in plans %}
+        <form action="{{ url_for('member.subscribe') }}" method="POST" class="rounded-2xl border border-slate-700 bg-slate-950/60 p-4 flex flex-col gap-3 hover:border-cyan-600/60 transition">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="plan_id" value="{{ plan.id }}">
+            <div class="flex items-start justify-between gap-3"><h3 class="font-bold text-white">{{ plan.name }}</h3><span class="text-emerald-300 font-black text-sm whitespace-nowrap">{{ plan.price }} ت</span></div>
+            <div class="text-xs text-slate-400">{{ plan.duration_days }} روز · {{ plan.total_sessions }} جلسه</div>
+            <select name="trainer_name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                <option value="">بدون مربی</option>
+                {% for trainer in trainers %}<option value="{{ trainer.name }}">{{ trainer.name }}{% if trainer.specialty %} · {{ trainer.specialty }}{% endif %}</option>{% endfor %}
+            </select>
+            <button type="submit" class="mt-auto rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-3 transition">انتخاب پلن و پرداخت از کیف پول</button>
+        </form>
+        {% else %}
+        <div class="text-sm text-slate-500">هنوز پلنی برای خرید تعریف نشده است.</div>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <section class="surface rounded-2xl p-5 overflow-x-auto">
+        <h2 class="text-lg font-black text-white mb-4">سوابق حضور</h2>
+        <table class="w-full text-right text-xs"><thead class="text-slate-500 border-b border-slate-800"><tr><th class="p-2">ورود</th><th class="p-2">خروج</th><th class="p-2">کمد</th></tr></thead><tbody class="divide-y divide-slate-800/70">
+            {% for log in attendance_history %}<tr><td class="p-2 text-slate-300">{{ log.check_in or '—' }}</td><td class="p-2 text-slate-400">{{ log.check_out or 'هنوز داخل' }}</td><td class="p-2 text-cyan-300">{{ log.locker.locker_number if log.locker else '—' }}</td></tr>{% else %}<tr><td colspan="3" class="p-5 text-center text-slate-500">سابقه‌ای ثبت نشده است.</td></tr>{% endfor %}
+        </tbody></table>
+    </section>
+    <section class="surface rounded-2xl p-5 overflow-x-auto">
+        <h2 class="text-lg font-black text-white mb-4">آخرین تراکنش‌ها</h2>
+        <table class="w-full text-right text-xs"><thead class="text-slate-500 border-b border-slate-800"><tr><th class="p-2">مبلغ</th><th class="p-2">شرح</th><th class="p-2">تاریخ</th></tr></thead><tbody class="divide-y divide-slate-800/70">
+            {% for tx in transactions %}<tr><td class="p-2 font-bold {% if tx.amount > 0 %}text-emerald-300{% else %}text-rose-300{% endif %}">{{ tx.amount }} ت</td><td class="p-2 text-slate-300">{{ tx.description or '—' }}</td><td class="p-2 text-slate-500">{{ tx.created_at }}</td></tr>{% else %}<tr><td colspan="3" class="p-5 text-center text-slate-500">تراکنشی ثبت نشده است.</td></tr>{% endfor %}
+        </tbody></table>
+    </section>
+</div>
+{% endblock %}
